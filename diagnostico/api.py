@@ -6,6 +6,8 @@ from rest_framework.response import Response
 
 @api_view(['POST'])
 def DiagnosticoEmpresarial(request):
+    if request.method != 'POST':
+        return Response({"error": "Método no permitido"}, status=405)
     Requirement = request.data.get('RequirementEmpresa')
     nivel_programa = request.data.get('nivel_programa')
     if not nivel_programa:
