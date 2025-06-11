@@ -157,3 +157,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+#vamos a realizar la configuracion del puerto de la API REST para que sea accesible desde el frontend
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173/"
+]
