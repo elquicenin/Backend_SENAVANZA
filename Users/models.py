@@ -24,7 +24,7 @@ class Empresa(models.Model):
         ('cc', 'CC'),
         ('nit', 'NIT'),
     ]
-    documento = models.CharField(max_length=10, choices=tipo_documento, default='cc')
+    documento = models.CharField(max_length=10, choices=tipo_documento, default='nit')
     numero_documento = models.IntegerField(null=False)
     razon_social = models.CharField(max_length=150, null=False, default='sin razon social')
     telefono = models.TextField(max_length=20)
