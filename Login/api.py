@@ -7,6 +7,72 @@ from rest_framework import status
 from .serializers import UserLoginSerializer
 from django.contrib.auth import authenticate
 
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+
+class CustomtokenObtainPairView(TokenObtainPairView):
+    def post(self, request, *args, **kwargs):
+        try:
+            response = super().post(request, *args, **kwargs)
+            tokens = response.data
+            
+
+            access_token = tokens['access']
+            refresh_token = tokens['refresh']
+
+            res = Response()
+
+            res.data = {
+                'access': True}
+            
+            res.set_cookie(key='access_token',
+                value=access_token,
+                httponly=True,
+                secure=True,
+                samesite='None',
+                path='/')
+            
+            res.set_cookie(key='refresh_token',
+                value=refresh_token,
+                httponly=True,
+                secure=True,
+                samesite='None',
+                path='/')
+            
+            return res;
+    
+        except:
+            return Response({'error': 'Error al obtener el token'}, status=status.HTTP_400_BAD_REQUEST)
+
+class CustomTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        try:
+            refresh_token = request.COOKIES.get('refresh_token')
+            request.data['refresh'] = refresh_token
+            response = super().post(request, *args, **kwargs)
+            tokens = response.data
+            access_token = tokens['access']
+            res = Response()
+
+            res.data = {
+                'refreshed': True
+            }
+
+            res.set_cookie(
+                key='access_token',
+                value=access_token,
+                httponly=True,
+                secure=True,
+                samesite='None', 
+                path='/'
+                )
+            
+            return res
+            
+        except:
+            return Response({'error': 'Error al refrescar el token'}, status=status.HTTP_400_BAD_REQUEST)
+            
+
 @api_view(['POST'])
 def login_admin(request):
     serializer = UserLoginSerializer(data=request.data)
@@ -31,6 +97,19 @@ def login_empresa(request):
             return Response({'message': 'Login empresa exitoso'}, status=200)
         return Response({'detail': 'No active account found with the given credentials'}, status=401)
     return Response(serializer.errors, status=400)
+
+@api_view(['POST'])
+def logout(request):
+    try:
+        res = Response()
+        res.data = {'success': 'Logout exitoso'}
+        res.delete_cookie('access_token', path='/', samesite='None')
+        res.delete_cookie('refresh_token', path='/', samesite='None')
+        return res
+    except: Response({'error': 'Error al cerrar sesión'}, status=status.HTTP_400_BAD_REQUEST)
+#-----------------------------------------------------------------------------------------------------------###
+
+# Aseguramos que el usuario esté autenticado para acceder a esta vista
 
 #-----------------------------------------------------------------------------------------------------------###
 #lo de abajo es otra forma de hacer el login, con diferente logica, pero no se esta usando en este momento

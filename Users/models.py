@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
+from datetime import timedelta, datetime
 # Create your models here.
 
 class User(AbstractUser):
@@ -68,8 +69,18 @@ class ProgramaFormacion(models.Model):
         ('tecnico', 'Técnico'),
         ('tecnologo', 'Tecnólogo'),
     ]
-    nivel_programa = models.CharField(max_length=20, choices=NIVEL_CHOICES, default='tenologo')
+    nivel_programa = models.CharField(max_length=20, choices=NIVEL_CHOICES, default='tecnologo')
     duracion = models.IntegerField(null=False, help_text='Duración en horas')
     modalidad = models.CharField(max_length=20, null=False, help_text='Modalidad del programa')
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
+
+class DiagnosticoEmpresarial(models.Model):
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name='diagnosticos')
+    archivo = models.FileField(upload_to='diagnosticos/', null=False, blank=False)
+    creation_at = models.DateTimeField(auto_now_add=True)
+
+    def vencido(self):
+        # tiempo de vencimiento del diagnostico es de 15 dias
+        # si la fecha actual es mayor a la fecha de creacion mas 15 dias, entonces el diagnostico esta vencido
+        return  datetime.now() > self.creation_at + timedelta(days=15) 
