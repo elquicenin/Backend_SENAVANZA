@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import UserLoginSerializer
 from django.contrib.auth import authenticate
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
 
 @api_view(['POST'])
 def login_admin(request):
@@ -31,6 +33,38 @@ def login_empresa(request):
             return Response({'message': 'Login empresa exitoso'}, status=200)
         return Response({'detail': 'No active account found with the given credentials'}, status=401)
     return Response(serializer.errors, status=400)
+
+@api_view(['POST'])
+def logout(request):
+    try:
+        res = Response()
+        res.data = {'success': 'Logout exitoso'}
+        res.delete_cookie('access_token', path='/', samesite='None')
+        res.delete_cookie('refresh_token', path='/', samesite='None')
+        return res
+    except: Response({'error': 'Error al cerrar sesión'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def verify(request):
+    """
+    Verifica la autenticidad del usuario leyendo la cookie access_token.
+    Devuelve el rol y el username.
+    """
+    user = request.user  # El usuario se extrae de CookiesJWTAuthentication automáticamente
+
+    if user and user.is_authenticated:
+        return Response({
+            'username': user.username,
+            'rol': user.rol,
+        }, status=status.HTTP_200_OK)
+    else:
+        return Response({'detail': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+#-----------------------------------------------------------------------------------------------------------###
+
+# Aseguramos que el usuario esté autenticado para acceder a esta vista
 
 #-----------------------------------------------------------------------------------------------------------###
 #lo de abajo es otra forma de hacer el login, con diferente logica, pero no se esta usando en este momento
