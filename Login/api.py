@@ -179,7 +179,6 @@ def logout(request):
 
 # Aseguramos que el usuario esté autenticado para acceder a esta vista
 
-<<<<<<< HEAD
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def verify(request):
@@ -196,8 +195,6 @@ def verify(request):
     else:
         return Response({'detail': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
 
-=======
->>>>>>> master
 #-----------------------------------------------------------------------------------------------------------###
 #lo de abajo es otra forma de hacer el login, con diferente logica, pero no se esta usando en este momento
 ###---------------------------------------------------------------------------------------------------------###
