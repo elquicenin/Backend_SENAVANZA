@@ -1,9 +1,9 @@
-from Users.models import programa_formacion
+from Users.models import ProgramaFormacion
 from rest_framework import serializers
 
 class ProgramaFormacionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = programa_formacion
+        model = ProgramaFormacion
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at']
     
@@ -13,5 +13,5 @@ class ProgramaFormacionSerializer(serializers.ModelSerializer):
         return data
     
     def create(self, validated_data):
-        return programa_formacion.objects.create(**validated_data)
+        return ProgramaFormacion.objects.create(**validated_data)
 
