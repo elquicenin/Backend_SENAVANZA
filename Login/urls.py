@@ -1,8 +1,7 @@
 from django .urls import path
-from .api import login_admin, login_empresa
+from .api import login_admin, login_empresa, logout, verify ,CustomtokenObtainPairView
 from rest_framework_simplejwt import views as jwt_views
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .api import login_admin, login_empresa, logout, verify ,CustomtokenObtainPairView
 
 
 
