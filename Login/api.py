@@ -113,6 +113,22 @@ def logout(request):
 
 # Aseguramos que el usuario esté autenticado para acceder a esta vista
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def verify(request):
+    """
+    Verifica la autenticidad del usuario leyendo la cookie access_token.
+    Devuelve el rol y el username.
+    """
+    user = request.user  # Autenticado por tu JWT Cookie
+    if user and user.is_authenticated:
+        return Response({
+            'username': user.username,
+            'rol': user.rol,
+        }, status=status.HTTP_200_OK)
+    else:
+        return Response({'detail': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
 #-----------------------------------------------------------------------------------------------------------###
 #lo de abajo es otra forma de hacer el login, con diferente logica, pero no se esta usando en este momento
 ###---------------------------------------------------------------------------------------------------------###
