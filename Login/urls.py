@@ -1,10 +1,5 @@
 from django .urls import path
-<<<<<<< Updated upstream
-from .api import login_admin, login_empresa
-from rest_framework_simplejwt import views as jwt_views
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-=======
-from .api import login_admin, login_empresa, logout, verify ,CustomtokenObtainPairView, CustomTokenRefreshView
+from .api import login_admin, login_empresa, logout ,CustomtokenObtainPairView, CustomTokenRefreshView
 
 >>>>>>> Stashed changes
 
@@ -18,6 +13,4 @@ urlpatterns = [
     path('logout/', logout, name='logout'),
     path('token/', CustomtokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
-    path('verify/', verify, name='verify'),
->>>>>>> Stashed changes
 ]
