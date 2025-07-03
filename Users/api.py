@@ -73,6 +73,13 @@ def user_detail(request):
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+@api_view(['GET'])
+def users_detail(request):
+    try:
+        if request.method == 'GET':
+            users = UserSerializer(models.User.objects.all(), many=True)  # el many=True se usa para indicar que se van a serializar varios objetos
+            return Response(users.data, status=status.HTTP_200_OK)
+    except: Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST) 
 
 
 #---------------------------PETICIONES DEL ADMINISTRADOR GET,POST,PUT,DELETE----------------------------#

@@ -16,11 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from Users import urls 
 from django.urls import include
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include(urls.urlpatterns)),  # el include permite incluir las urls de la app Users bajo el prefijo 'api/'
-    path('login/', include('Login.urls')),  # el include permite incluir las urls de la app Login bajo el prefijo 'api/login/'
+    path('api/', include('Users.urls')),  # el include permite incluir las urls de la app Users bajo el prefijo 'api/'
+    path('login/', include('Login.urls')),  # el include permite incluir las urls de la app Login bajo el prefijo login/'
     path('apidiagnos/', include('diagnostico.urls')),  # el include permite incluir las urls de la app diagnostico bajo el prefijo 'api/diagnostico/'
 ]

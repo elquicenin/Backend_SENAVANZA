@@ -80,7 +80,7 @@ TEMPLATES = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'Login.authentication.CookiesJWTAuthentication',  # Utilizamos la autenticacion personalizada que creamos
     ),
     'DEFAULT_PERMISSION_CLASSES' : (
         'rest_framework.permissions.IsAuthenticated',
@@ -161,6 +161,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 #vamos a realizar la configuracion del puerto de la API REST para que sea accesible desde el frontend
+<<<<<<< HEAD
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -176,4 +177,8 @@ CORS_ALLOWED_ORIGINS = [
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
+=======
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173"
+>>>>>>> master
 ]
