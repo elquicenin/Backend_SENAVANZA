@@ -29,6 +29,7 @@ class UserSerializer(serializers.ModelSerializer):
         if user.rol == 'empresa' and empresa_data:
             models.Empresa.objects.create(user=user, **empresa_data)
         return user
+    
 
     def update(self, instance, validated_data):
         empresa_data = validated_data.pop('empresa', None)# el pop() elimina el campo 'empresa' de validated_data y lo asigna a empresa_data, si no existe, devuelve None
