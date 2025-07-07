@@ -1,12 +1,12 @@
 #en este archivo de api.py vamos a realizar la validacion de la data ingresada para realizar el logeo de los usuarios y las empresas y generar el token de acceso,
 # ademas de las vistas de la API VIEW, que son para las peticion http, en este caso GET, POST, PUT, DELETE, y primero vamos a realizar al de administrador, que es la que se encarga de gestionar los usuarios, empresas y programas de formacion.
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import UserLoginSerializer
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
-
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
@@ -121,3 +121,20 @@ def logout(request):
             # else:
             #     return Response({'error': 'User nis not an empresa'}, status=status.HTTP_400_BAD_REQUEST)
 ###---------------------------------------------------------------------------------------------------------###
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def verify(request):
+    """
+    Verifica la autenticidad del usuario leyendo la cookie access_token.
+    Devuelve el rol y el username.
+    """
+    user = request.user  # Autenticado por tu JWT Cookie
+    if user and user.is_authenticated:
+        return Response({
+            'username': user.username,
+            'rol': user.rol,
+        }, status=status.HTTP_200_OK)
+    else:
+        return Response({'detail': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
