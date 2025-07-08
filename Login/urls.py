@@ -1,5 +1,6 @@
 from django .urls import path
 from .api import login_admin, login_empresa, logout, verify ,CustomtokenObtainPairView, CustomTokenRefreshView
+from .api import login_admin, login_empresa, logout , verify,CustomtokenObtainPairView, CustomTokenRefreshView
 
 
 urlpatterns = [
