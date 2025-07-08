@@ -87,8 +87,9 @@ def users_detail(request):
 @api_view(['GET'])
 def user_empresa_list(request):
     if request.method == 'GET':
-        empresas = UserSerializer(models.Empresa.objects.all(), many=True) #el many=True se usa para indicar que se van a serializar varios objetos
-        return Response(empresas.data, status=status.HTTP_200_OK)
+        empresas = models.Empresa.objects.all() 
+        serializer = EmpresaSerializer(empresas, many=True)#el many=True se usa para indicar que se van a serializar varios objetos
+        return Response( serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def user_empresa_create(request):
@@ -132,7 +133,7 @@ def user_empresa_update(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view([ 'DELETE'])
-def user_empresa_delete(request, pk):
+def user_empresa_delete(request, pk): 
     if request.method == 'DELETE':
         try:
             user = models.Empresa.objects.get(pk=pk)  # la pk es el id del usuario que se va a eliminar
