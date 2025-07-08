@@ -12,7 +12,7 @@ urlpatterns = [
 
     path('empresa/', user_empresa_list, name='user_empresa_list'),
     path('empresa/create/', user_empresa_create, name='user_empresa_create'),
-    path('empresa/update/<str:pk>/', user_empresa_update, name='user_empresa_update'),
+    path('empresa/update/', user_empresa_update, name='user_empresa_update'),
     path('perfil/',perfil_empresa, name="perfil_empresa"),
 
     path('programas/', programa_list, name='programa_list'),

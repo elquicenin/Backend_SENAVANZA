@@ -7,8 +7,6 @@ from rest_framework import status
 from .serializers import UserLoginSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
-from rest_framework.permissions import IsAuthenticated
-
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
@@ -72,74 +70,7 @@ class CustomTokenRefreshView(TokenRefreshView):
             return res
             
         except:
-            return Response({'error': 'Error al refrescar el token'}, status=status.HTTP_400_BAD_REQUEST)
-            
-
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-
-
-class CustomtokenObtainPairView(TokenObtainPairView):
-    def post(self, request, *args, **kwargs):
-        try:
-            response = super().post(request, *args, **kwargs)
-            tokens = response.data
-            
-
-            access_token = tokens['access']
-            refresh_token = tokens['refresh']
-
-            res = Response()
-
-            res.data = {
-                'access': True}
-            
-            res.set_cookie(key='access_token',
-                value=access_token,
-                httponly=True,
-                secure=True,
-                samesite='None',
-                path='/')
-            
-            res.set_cookie(key='refresh_token',
-                value=refresh_token,
-                httponly=True,
-                secure=True,
-                samesite='None',
-                path='/')
-            
-            return res;
-    
-        except:
-            return Response({'error': 'Error al obtener el token'}, status=status.HTTP_400_BAD_REQUEST)
-
-class CustomTokenRefreshView(TokenRefreshView):
-    def post(self, request, *args, **kwargs):
-        try:
-            refresh_token = request.COOKIES.get('refresh_token')
-            request.data['refresh'] = refresh_token
-            response = super().post(request, *args, **kwargs)
-            tokens = response.data
-            access_token = tokens['access']
-            res = Response()
-
-            res.data = {
-                'refreshed': True
-            }
-
-            res.set_cookie(
-                key='access_token',
-                value=access_token,
-                httponly=True,
-                secure=True,
-                samesite='None', 
-                path='/'
-                )
-            
-            return res
-            
-        except:
-            return Response({'error': 'Error al refrescar el token'}, status=status.HTTP_400_BAD_REQUEST)
-            
+            return Response({'error': 'Error al refrescar el token'}, status=status.HTTP_400_BAD_REQUEST) 
 
 @api_view(['POST'])
 def login_admin(request):

@@ -117,7 +117,6 @@ def perfil_empresa(request):
     
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
-
 def user_empresa_update(request):
     if request.method == 'PUT':
 
