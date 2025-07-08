@@ -44,6 +44,15 @@ def programa_detail(request, pk):
 #--------------------------TERMINAMOS LOS METODOS PARA LAS PETICIONES HTTP-------------------------------#
 #-------------------------------------------------------------------------------------------------------#
 ###---------------------------GET,POST,PUT,DELETE PARA EL CRUD DE USUARIOS DEL SISTEMA----------------------------#
+@api_view(['GET'])
+def empresa_detail(request, pk):
+    try:
+        empresa = models.Empresa.objects.get(pk=pk)
+    except models.Empresa.DoesNotExist:
+        return Response({'error': 'Empresa no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    serializer = EmpresaSerializer(empresa)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 @api_view(['POST'])
 def user_create(request):
     serializer = UserSerializer(data=request.data)
@@ -88,8 +97,8 @@ def users_detail(request):
 def user_empresa_list(request):
     if request.method == 'GET':
         empresas = models.Empresa.objects.all() 
-        serializer = EmpresaSerializer(empresas, many=True)#el many=True se usa para indicar que se van a serializar varios objetos
-        return Response( serializer.data, status=status.HTTP_200_OK)
+        serializer = EmpresaSerializer(empresas, many=True) #el many=True se usa para indicar que se van a serializar varios objetos
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def user_empresa_create(request):
@@ -116,32 +125,22 @@ def perfil_empresa(request):
     serializer = EmpresaSerializer(empresa)
     return Response(serializer.data, status=status.HTTP_200_OK)
     
-@api_view(['PUT'])
-@permission_classes([IsAuthenticated])
-def user_empresa_update(request):
-    if request.method == 'PUT':
 
-        user=request.user
-        try:
-            empresa=models.Empresa.objects.get(user=user)
-        except models.Empresa.DoesNotExist:
-            return Response({"error": "no se encontro ningun dato de este usuarios"})
-        serializer = EmpresaSerializer(empresa, data=request.data, partial=True)  # partial=True permite actualizar solo algunos campos
+@api_view(['PUT', 'DELETE'])
+def user_empresa_update(request, pk):
+    try:
+        empresa = models.Empresa.objects.get(pk=pk)
+    except models.Empresa.DoesNotExist:
+        return Response({'error': 'Empresa no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'DELETE':
+        empresa.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    if request.method == 'PUT':
+        serializer = EmpresaSerializer(empresa, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view([ 'DELETE'])
-def user_empresa_delete(request, pk): 
-    if request.method == 'DELETE':
-        try:
-            user = models.Empresa.objects.get(pk=pk)  # la pk es el id del usuario que se va a eliminar
-            user.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except models.Empresa.DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
-
-
 #-------------------------------------------------------------------------------------------------------#
