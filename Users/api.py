@@ -45,11 +45,17 @@ def programa_detail(request, pk):
 #-------------------------------------------------------------------------------------------------------#
 ###---------------------------GET,POST,PUT,DELETE PARA EL CRUD DE USUARIOS DEL SISTEMA----------------------------#
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def empresa_detail(request, pk):
     try:
         empresa = models.Empresa.objects.get(pk=pk)
     except models.Empresa.DoesNotExist:
         return Response({'error': 'Empresa no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+
+    if empresa.estado == 2:
+        return Response({'error': 'Empresa inactiva'}, status=status.HTTP_403_FORBIDDEN)
+
     serializer = EmpresaSerializer(empresa)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
