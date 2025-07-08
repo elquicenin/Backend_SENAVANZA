@@ -44,6 +44,15 @@ def programa_detail(request, pk):
 #--------------------------TERMINAMOS LOS METODOS PARA LAS PETICIONES HTTP-------------------------------#
 #-------------------------------------------------------------------------------------------------------#
 ###---------------------------GET,POST,PUT,DELETE PARA EL CRUD DE USUARIOS DEL SISTEMA----------------------------#
+@api_view(['GET'])
+def empresa_detail(request, pk):
+    try:
+        empresa = models.Empresa.objects.get(pk=pk)
+    except models.Empresa.DoesNotExist:
+        return Response({'error': 'Empresa no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    serializer = EmpresaSerializer(empresa)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 @api_view(['POST'])
 def user_create(request):
     serializer = UserSerializer(data=request.data)
@@ -119,24 +128,17 @@ def perfil_empresa(request):
 
 @api_view(['PUT', 'DELETE'])
 def user_empresa_update(request, pk):
-    if request.method == 'DELETE':
-        try:
-            user = models.Empresa.objects.get(pk=pk)  # la pk es el id del usuario que se va a eliminar
-            user.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except models.Empresa.DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
-
-
-def user_empresa_update(request, pk):
     try:
-        user = models.Empresa.objects.get(pk=pk)#la pk es el id del usuario que se va a actualizar sirve para identificar el usuario en la base de datos
-    except models.userAdmin.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        empresa = models.Empresa.objects.get(pk=pk)
+    except models.Empresa.DoesNotExist:
+        return Response({'error': 'Empresa no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'DELETE':
+        empresa.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     if request.method == 'PUT':
-        serializer = EmpresaSerializer(user, data=request.data, partial=True)  # partial=True permite actualizar solo algunos campos
+        serializer = EmpresaSerializer(empresa, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
