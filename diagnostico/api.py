@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 @api_view(['POST'])
 def DiagnosticoEmpresarial(request):
-    
+    print('datos recibidos', request.data)
     Requirement = request.data.get('RequirementEmpresa')
     nivel_programa = request.data.get('nivel_programa')
     #en la variables superiores se esperan las los datos ingresados desde el front end para poder usarlos mas abajo
