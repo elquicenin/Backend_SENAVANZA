@@ -173,9 +173,6 @@ def user_empresa_update(request):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view([ 'DELETE'])
-def user_empresa_delete(request, pk): 
-
 @api_view(['PUT', 'DELETE'])
 def user_empresa_update(request, pk):
     try:
@@ -191,9 +188,6 @@ def user_empresa_update(request, pk):
         except models.Empresa.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-
-
-#-------------------------------------------------------------------------------------------------------#
         empresa.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
