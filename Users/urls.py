@@ -1,7 +1,7 @@
 from .api import (
     user_create, user_empresa_list, user_empresa_update, user_empresa_create,
     programa_list, programa_create, programa_detail,
-    user_detail, users_detail, perfil_empresa, empresa_detail
+    user_detail, users_detail, perfil_empresa, empresa_detail, user_detail_by_pk
 )
 
 from django.urls import path
@@ -13,6 +13,7 @@ urlpatterns = [
     path('user/create/', user_create, name='user_create'),
     path('user/', user_detail, name='user_detail'),
     path('users/', users_detail, name='users_detail'),
+    path('users/<str:pk>/', user_detail_by_pk, name='user_detail_by_pk'),
     
 
     path('empresa/', user_empresa_list, name='user_empresa_list'),
