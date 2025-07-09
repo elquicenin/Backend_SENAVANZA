@@ -25,22 +25,29 @@ def programa_create(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+
 @api_view(['PUT', 'DELETE'])
 def programa_detail(request, pk):
+    """
+    Vista para actualizar (PUT) o eliminar (DELETE) un Programa de Formación
+    """
     try:
-        programa = models.ProgramaFormacion.objects.get(pk=pk)  # la pk es el id del programa que se va a eliminar
+        programa = models.ProgramaFormacion.objects.get(pk=pk)
     except models.ProgramaFormacion.DoesNotExist:
-        return Response({'error': 'Program not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Programa no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
 
     if request.method == 'DELETE':
         programa.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Programa eliminado correctamente.'}, status=status.HTTP_204_NO_CONTENT)
+
 
     if request.method == 'PUT':
         serializer = ProgramaFormacionSerializer(programa, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 #--------------------------TERMINAMOS LOS METODOS PARA LAS PETICIONES HTTP-------------------------------#
 #-------------------------------------------------------------------------------------------------------#
 ###---------------------------GET,POST,PUT,DELETE PARA EL CRUD DE USUARIOS DEL SISTEMA----------------------------#
