@@ -113,9 +113,6 @@ def user_detail_by_pk(request, pk):
 def user_empresa_list(request):
     if request.method == 'GET':
         empresas = models.Empresa.objects.all() 
-        serializer = EmpresaSerializer(empresas, many=True)#el many=True se usa para indicar que se van a serializar varios objetos
-        return Response( serializer.data, status=status.HTTP_200_OK)
-        empresas = models.Empresa.objects.all() 
         serializer = EmpresaSerializer(empresas, many=True) #el many=True se usa para indicar que se van a serializar varios objetos
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -156,22 +153,6 @@ def perfil_empresa(request):
 
 
     
-@api_view(['PUT'])
-@permission_classes([IsAuthenticated])
-
-def user_empresa_update(request):
-    if request.method == 'PUT':
-
-        user=request.user
-        try:
-            empresa=models.Empresa.objects.get(user=user)
-        except models.Empresa.DoesNotExist:
-            return Response({"error": "no se encontro ningun dato de este usuarios"})
-        serializer = EmpresaSerializer(empresa, data=request.data, partial=True)  # partial=True permite actualizar solo algunos campos
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['PUT', 'DELETE'])
 def user_empresa_update(request, pk):
@@ -181,13 +162,6 @@ def user_empresa_update(request, pk):
         return Response({'error': 'Empresa no encontrada'}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'DELETE':
-        try:
-            user = models.Empresa.objects.get(pk=pk)  # la pk es el id del usuario que se va a eliminar
-            user.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except models.Empresa.DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
         empresa.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
