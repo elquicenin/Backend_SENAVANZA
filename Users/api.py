@@ -52,12 +52,12 @@ def empresa_detail(request, pk):
     except models.Empresa.DoesNotExist:
         return Response({'error': 'Empresa no encontrada'}, status=status.HTTP_404_NOT_FOUND)
 
-
     if empresa.estado == 2:
         return Response({'error': 'Empresa inactiva'}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = EmpresaSerializer(empresa)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 @api_view(['POST'])
 def user_create(request):
@@ -116,10 +116,9 @@ def user_empresa_create(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])  # Protege con JWT desde la cookie o header
+@permission_classes([IsAuthenticated])
 def perfil_empresa(request):
-    user = request.user  # Se llena automáticamente desde el JWT válido
-
+    user = request.user
     try:
         empresa = models.Empresa.objects.get(user=user)
     except models.Empresa.DoesNotExist:
@@ -128,8 +127,12 @@ def perfil_empresa(request):
             status=status.HTTP_404_NOT_FOUND
         )
 
+    if empresa.estado == 2:
+        return Response({"error": "Empresa inactiva"}, status=status.HTTP_403_FORBIDDEN)
+
     serializer = EmpresaSerializer(empresa)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
     
 
 @api_view(['PUT', 'DELETE'])
@@ -147,6 +150,12 @@ def user_empresa_update(request, pk):
         serializer = EmpresaSerializer(empresa, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
+
+            if serializer.validated_data.get('estado') == 2:
+                empresa.user.is_active = False
+            else:
+                empresa.user.is_active = True
+            empresa.user.save()
+
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#-------------------------------------------------------------------------------------------------------#
