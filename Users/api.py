@@ -96,6 +96,16 @@ def users_detail(request):
             users = UserSerializer(models.User.objects.all(), many=True)  # el many=True se usa para indicar que se van a serializar varios objetos
             return Response(users.data, status=status.HTTP_200_OK)
     except: Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST) 
+@api_view(['GET'])
+def user_detail_by_pk(request, pk):
+    try:
+        user = models.User.objects.get(pk=pk)
+    except models.User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    serializer = UserSerializer(user)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 
 #---------------------------PETICIONES DEL ADMINISTRADOR GET,POST,PUT,DELETE----------------------------#
@@ -115,7 +125,7 @@ def user_empresa_create(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])
 def perfil_empresa(request):
     user = request.user
@@ -130,8 +140,17 @@ def perfil_empresa(request):
     if empresa.estado == 2:
         return Response({"error": "Empresa inactiva"}, status=status.HTTP_403_FORBIDDEN)
 
-    serializer = EmpresaSerializer(empresa)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    if request.method == 'GET':
+        serializer = EmpresaSerializer(empresa)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    if request.method == 'PUT':
+        serializer = EmpresaSerializer(empresa, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     
 
