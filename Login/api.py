@@ -4,6 +4,7 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from .serializers import UserLoginSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
@@ -109,6 +110,22 @@ def logout(request):
     except: Response({'error': 'Error al cerrar sesión'}, status=status.HTTP_400_BAD_REQUEST)
 #-----------------------------------------------------------------------------------------------------------###
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def verify(request):
+    """
+    Verifica la autenticidad del usuario leyendo la cookie access_token.
+    Devuelve el rol y el username.
+    """
+    user = request.user  # Autenticado por tu JWT Cookie
+    if user and user.is_authenticated:
+        return Response({
+            'username': user.username,
+            'rol': user.rol,
+        }, status=status.HTTP_200_OK)
+    else:
+        return Response({'detail': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+    
 # Aseguramos que el usuario esté autenticado para acceder a esta vista
 
 #-----------------------------------------------------------------------------------------------------------###

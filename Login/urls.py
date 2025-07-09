@@ -1,5 +1,5 @@
 from django .urls import path
-from .api import login_admin, login_empresa, logout , verify,CustomtokenObtainPairView, CustomTokenRefreshView
+from .api import login_admin, login_empresa, logout ,verify ,CustomtokenObtainPairView, CustomTokenRefreshView
 
 
 urlpatterns = [
@@ -10,4 +10,5 @@ urlpatterns = [
     path('token/', CustomtokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
     path('verify/', verify, name='verify'),
+    path('verify/', verify, name='verify')
 ]
