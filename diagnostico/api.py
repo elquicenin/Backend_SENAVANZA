@@ -2,43 +2,59 @@ from .metodo_diagnostico import RecomendarPrograma
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 import unicodedata
+import re
 
+# 🔹 Normaliza texto (nivel_programa)
 def limpiar_texto(texto):
     if not texto:
         return ""
-    # quitar las tildes
     texto = unicodedata.normalize("NFD", texto).encode('ascii', 'ignore').decode('utf-8')
-    # quitar caracteres especiales y espacios en blanco
-    texto = texto.lower().replace(' ','')
+    texto = texto.lower().replace(' ', '')
     return texto
+
+# 🔸 Valida que el texto tenga sentido y no sea ruido
+def entrada_valida(texto):
+    if not texto:
+        return False
+    texto = texto.strip().lower()
+    if len(texto) < 10:
+        return False
+    if len(set(texto)) <= 2:  # evita "aaaaaa", "111111", "zzzz"
+        return False
+    palabras = re.findall(r'\b\w+\b', texto)
+    if len(palabras) < 2:
+        return False
+    return True
 
 @api_view(['POST'])
 def DiagnosticoEmpresarial(request):
     print('datos recibidos', request.data)
+
     Requirement = request.data.get('RequirementEmpresa')
     nivel_programa = request.data.get('nivel_programa')
     tools = request.data.get('tools')
     hards_kills = request.data.get('hards_kills')
-    #en la variables superiores se esperan las los datos ingresados desde el front end para poder usarlos mas abajo
 
-    #normalizo el nivel de programa 
+    # Normaliza el campo estructurado
     nivel_programa = limpiar_texto(nivel_programa)
 
-    if not Requirement or not nivel_programa: #Verificamos negando los datos para no tener que poner elif o else, lo cual permite que los datos si se ingresen y no pueda ser ejecutado o tener un crash
-        return Response({"error": "Datos incompletos"}, status=400)
-    
-    #declaramos la variable recomend_program para invocar el metodo que le pasaramemos como parametros lo enviado por le frontend
+    # Validación de que existan los campos
+    if not all([Requirement, nivel_programa, tools, hards_kills]):
+        return Response({"error": "Faltan campos obligatorios."}, status=400)
+
+    # Validación semántica de los textos
+    if not (entrada_valida(Requirement) and entrada_valida(tools) and entrada_valida(hards_kills)):
+        return Response({"error": "Por favor ingresa información válida y con sentido en todos los campos."}, status=400)
+
     recomend_program = RecomendarPrograma(Requirement, nivel_programa, tools, hards_kills)
 
-    if "error" in recomend_program:#usamos la negacion para validar si el metodo RecomendarPrograma arroja un error de coincidencia no accedera a los atributos de los programas de formacion 
+    if "error" in recomend_program:
         return Response({"error": recomend_program["error"]}, status=404)
-    
+
     return Response({
         "programa_recomendado": {
-        "nombre": recomend_program["nombre"],
-        "descripcion": recomend_program["descripcion"],
-        "nivel_programa": recomend_program["nivel_programa"]
-                }
-            }, status=200)
-            
-            
+            "nombre": recomend_program["nombre"],
+            "descripcion": recomend_program["descripcion"],
+            "nivel_programa": recomend_program["nivel_programa"]
+        }
+    }, status=200)
