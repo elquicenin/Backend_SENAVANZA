@@ -32,25 +32,16 @@ def programa_detail(request, pk):
         return Response({'error': 'Programa no encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
 
-    if request.method == 'DELETE':
-        programa.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    if request.method == 'GET':
+        serializer = ProgramaFormacionSerializer(programa)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     if request.method == 'PUT':
         serializer = ProgramaFormacionSerializer(programa, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-#--------------------------TERMINAMOS LOS METODOS PARA LAS PETICIONES HTTP-------------------------------#
-#-------------------------------------------------------------------------------------------------------#
-###---------------------------GET,POST,PUT,DELETE PARA EL CRUD DE USUARIOS DEL SISTEMA----------------------------#
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def empresa_detail(request, pk):
-    try:
-        empresa = models.Empresa.objects.get(pk=pk)
-    except models.Empresa.DoesNotExist:
-        return Response({'error': 'Empresa no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == 'DELETE':
         programa.delete()
