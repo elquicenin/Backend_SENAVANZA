@@ -41,7 +41,6 @@ def RecomendarPrograma(requirementEmpresa, nivel_programa, tools, hards_kills):
         "nombre": mejor_programa.nombre,
         "descripcion": mejor_programa.descripcion,
         "nivel_programa": mejor_programa.nivel_programa,
-        "porcentaje_similitud": round(similitud_total[idx_mejor] * 100, 2)
     }
 
 
