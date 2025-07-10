@@ -9,7 +9,7 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 
 
 
-def RecomendarPrograma(requirementEmpresa, nivel_programa):
+def RecomendarPrograma(requirementEmpresa, nivel_programa, tools, hards_kills):
 
     programas = ProgramaFormacion.objects.filter(nivel_programa=nivel_programa)
     if not programas.exists():
@@ -23,13 +23,17 @@ def RecomendarPrograma(requirementEmpresa, nivel_programa):
     # Convertimos las descripciones a embeddings
     embeddings_descripciones = model.encode(descripciones, convert_to_tensor=True)
     embeddings_requirement = model.encode(requirementEmpresa, convert_to_tensor=True)
+    embeddings_tools = model.encode(tools, convert_to_tensor=True)
+    embeddings_hard_skills = model.encode(hards_kills, convert_to_tensor=True)
 
     # Calculamos la similitud entre el embedding de la descripción del programa y el embedding de los requisitos de la empresa
-    similitudes = util.pytorch_cos_sim(embeddings_requirement, embeddings_descripciones)
-
-
-    
+    similitud_programa_con_requirement = util.pytorch_cos_sim(embeddings_requirement, embeddings_descripciones)
+    similitud_tools = util.pytorch_cos_sim(embeddings_tools, embeddings_descripciones)
+    similitud_hard_skills = util.pytorch_cos_sim(embeddings_hard_skills, embeddings_descripciones)
+    # Combinamos las similitudes
+    similitudes = (similitud_programa_con_requirement + similitud_tools + similitud_hard_skills) / 3
     # Obtenemos el índice del programa con la mayor similitud
+    
     recomend_program = torch.argmax(similitudes).item()
 
     mejor_programa = programas_filtrados[recomend_program]
