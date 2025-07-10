@@ -9,8 +9,9 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 
 
 
-def RecomendarPrograma(requirementEmpresa, nivel_programa):
-    programas = ProgramaFormacion.objects.all()
+def RecomendarPrograma(requirementEmpresa, nivel_programa, tools, hards_kills):
+
+    programas = ProgramaFormacion.objects.filter(nivel_programa=nivel_programa)
     if not programas.exists():
         return {"error": "no se encontraron programas relacionados con lo requerido"}
     programas_filtrados = list(programas)
@@ -19,19 +20,22 @@ def RecomendarPrograma(requirementEmpresa, nivel_programa):
     # Embeddings
     embeddings_descripciones = model.encode(descripciones, convert_to_tensor=True)
     embeddings_requirement = model.encode(requirementEmpresa, convert_to_tensor=True)
+    embeddings_tools = model.encode(tools, convert_to_tensor=True)
+    embeddings_hard_skills = model.encode(hards_kills, convert_to_tensor=True)
 
-    # Similitud de descripción (coseno)
-    similitudes_desc = util.pytorch_cos_sim(embeddings_requirement, embeddings_descripciones).cpu().numpy().flatten()
+    # Calculamos la similitud entre el embedding de la descripción del programa y el embedding de los requisitos de la empresa
+    similitud_programa_con_requirement = util.pytorch_cos_sim(embeddings_requirement, embeddings_descripciones)
+    similitud_tools = util.pytorch_cos_sim(embeddings_tools, embeddings_descripciones)
+    similitud_hard_skills = util.pytorch_cos_sim(embeddings_hard_skills, embeddings_descripciones)
+    # Combinamos las similitudes
+    similitudes = (similitud_programa_con_requirement + similitud_tools + similitud_hard_skills) / 3
+    # Obtenemos el índice del programa con la mayor similitud
+    
+    recomend_program = torch.argmax(similitudes).item()
 
-    # Similitud de nivel_programa (1 si coincide, 0 si no)
-    similitudes_nivel = [1.0 if p.nivel_programa == nivel_programa else 0.0 for p in programas_filtrados]
+    mejor_programa = programas_filtrados[recomend_program]
 
-    # Ponderación: 70% descripción, 30% nivel_programa
-    similitud_total = [0.7 * desc + 0.3 * nivel for desc, nivel in zip(similitudes_desc, similitudes_nivel)]
-
-    # Mejor programa
-    idx_mejor = int(torch.tensor(similitud_total).argmax())
-    mejor_programa = programas_filtrados[idx_mejor]
+    
 
     return {
         "nombre": mejor_programa.nombre,
