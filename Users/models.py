@@ -4,6 +4,7 @@ from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 from datetime import timedelta, datetime
+from django.utils import timezone
 # Create your models here.
 
 class User(AbstractUser):
@@ -83,4 +84,13 @@ class DiagnosticoEmpresarial(models.Model):
     def vencido(self):
         # tiempo de vencimiento del diagnostico es de 15 dias
         # si la fecha actual es mayor a la fecha de creacion mas 15 dias, entonces el diagnostico esta vencido
-        return  datetime.now() > self.creation_at + timedelta(days=15) 
+        return  datetime.now() > self.creation_at + timedelta(days=15)
+    
+class PasswordResetCode(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    code = models.CharField(max_length=4)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_valid(self):
+        return timezone.now() < self.created_at + timedelta(minutes=5) #==> solo sera valido por 5 minutos#
+    #se reliza la creacion de la clase para hacer el reset de la contraseña y despues creamos el metodod que va a crear el codigo de verificacion de la contraseña#

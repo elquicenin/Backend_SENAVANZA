@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from . import models
+from django.conf import settings
+import random
 
 #serializer es utilizado para convertir instancias de modelos a formatos JSON o XML
 # y viceversa, facilitando la comunicación entre el servidor y el cliente. 
@@ -75,8 +77,6 @@ class UserSerializer(serializers.ModelSerializer):
 #   }
 # }
 ###-------------------------------------------------------------------------------------------###
-
-
 class ProgramaFormacionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ProgramaFormacion # Serializa todos los campos del modelo ProgramaFormacion 

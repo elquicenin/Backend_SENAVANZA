@@ -4,15 +4,17 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from .serializers import UserLoginSerializer
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from .serializers import UserLoginSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from Users.models import Empresa
-from . import models
+from . import modelsfrom Users import models
+
 
 class CustomtokenObtainPairView(TokenObtainPairView):
+    
     def post(self, request, *args, **kwargs):
         try:
             # Genera los tokens (acceso y refresh) usando SimpleJWT
@@ -211,3 +213,18 @@ def verify(request):
 ###---------------------------------------------------------------------------------------------------------###
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def verify(request):
+    """
+    Verifica la autenticidad del usuario leyendo la cookie access_token.
+    Devuelve el rol y el username.
+    """
+    user = request.user  # Autenticado por tu JWT Cookie
+    if user and user.is_authenticated:
+        return Response({
+            'username': user.username,
+            'rol': user.rol,
+        }, status=status.HTTP_200_OK)
+    else:
+        return Response({'detail': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
