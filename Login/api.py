@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from Users.models import Empresa
-from . import modelsfrom Users import models
+from . import models
 
 
 class CustomtokenObtainPairView(TokenObtainPairView):
