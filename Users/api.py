@@ -121,7 +121,6 @@ def perfil_empresa(request):
             {"error": "No se encontró una empresa asociada a este usuario"},
             status=status.HTTP_404_NOT_FOUND
         )
-
     if empresa.estado == 2:
         return Response({"error": "Empresa inactiva"}, status=status.HTTP_403_FORBIDDEN)
 
