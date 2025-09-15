@@ -228,3 +228,22 @@ def verify(request):
         }, status=status.HTTP_200_OK)
     else:
         return Response({'detail': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+    
+## Recuperacion contraseña ##
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def send_reset_code(request):
+    password_serializer = PasswordResetSerializer(data=request.data)
+    if password_serializer.is_valid():
+        password_serializer.save()
+        return Response({'message': 'Código de restablecimiento enviado al correo electrónico registrado.'}, status=status.HTTP_200_OK)
+    return Response(password_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def confirm_reset_code(request):
+    confirm_serializer = PasswordResetConfirmSerializer(data=request.data)
+    if confirm_serializer.is_valid():
+        confirm_serializer.save()
+        return Response({'message': 'Contraseña restablecida con éxito.'}, status=status.HTTP_200_OK)
+    return Response(confirm_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
