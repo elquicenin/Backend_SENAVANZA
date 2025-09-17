@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .serializers import UserLoginSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer
+from .serializers import UserLoginSerializer, PasswordResetSerializer, ConfirmationCodeSerializer,PasswordResetConfirmSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -229,6 +229,8 @@ def verify(request):
     else:
         return Response({'detail': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
     
+
+
 ## Recuperacion contraseña ##
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -242,6 +244,17 @@ def send_reset_code(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def confirm_reset_code(request):
+    confirm_serializer = ConfirmationCodeSerializer(data=request.data)
+    if confirm_serializer.is_valid():
+        # Aquí puedes usar confirm_serializer.validated_data
+        # No llames a confirm_serializer.save()
+        return Response({'message': 'Código confirmado. Ahora puedes restablecer tu contraseña.'}, status=status.HTTP_200_OK)
+    else:
+        return Response(confirm_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def confirm_password(request):
     confirm_serializer = PasswordResetConfirmSerializer(data=request.data)
     if confirm_serializer.is_valid():
         confirm_serializer.save()

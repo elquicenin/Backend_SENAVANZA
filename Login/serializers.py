@@ -38,8 +38,8 @@ class PasswordResetSerializer(serializers.Serializer):
             defaults={'code': new_codee, 'created_at': timezone.now()}
         )
 
-        # print("DEBUG RESET:", reset, reset.code)  
-        # # esto es para ver en la consola el codigo de restablecimiento que se creo o se actualizo
+        print("DEBUG RESET:", reset, reset.code)  
+        # esto es para ver en la consola el codigo de restablecimiento que se creo o se actualizo
 
         user.email_user(
             subject="Código de restablecimiento de contraseña",
@@ -47,6 +47,35 @@ class PasswordResetSerializer(serializers.Serializer):
         ) # enviamos el codigo al email del usuario importante todo se saca de la base de datos
 
         return reset # retornamos el codigo de restablecimiento
+
+
+class ConfirmationCodeSerializer(serializers.Serializer):
+    nit = serializers.IntegerField()
+    code = serializers.CharField(max_length=4)
+
+    def validate(self, data):
+        nit = data.get('nit')
+        code = data.get('code')
+
+        try:
+
+            empresa = models.Empresa.objects.get(numero_documento=nit)
+            user = empresa.user
+
+        except models.Empresa.DoesNotExist:
+            raise serializers.ValidationError("NIT no encontrado.")
+
+        try:
+            reset_code = models.PasswordResetCode.objects.get(user=user, code=code)
+            if not reset_code.is_valid():
+                raise serializers.ValidationError("El código ha expirado.")
+        except models.PasswordResetCode.DoesNotExist:
+            raise serializers.ValidationError("El código de restablecimiento es inválido o ya fue utilizado.")
+
+        data['user'] = user
+        data['reset_code'] = reset_code
+        return data
+
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
     nit = serializers.IntegerField()
@@ -83,10 +112,37 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         user.save()
         self.validated_data['reset_code'].delete()
         return user
-        # el metodo save guarda la nueva contraseña en la base de datos y elimina el codigo de restablecimiento para que no se pueda volver a usar
-        # importante desde el front hay que enviar un request con el siguiente formato: 
-        # {
-        # "nit": 108827233,
-        # "code": "1234",  
-        # "new_password": "Holamundo1"}
+    
 
+
+    # flujo para el cambio de contraseña 
+    # 1. El usuario envia el nit a la vista send_reset_code
+    # 2. La vista valida el nit con el serializer PasswordResetSerializer
+    # 3. El serializer crea el codigo de restablecimiento y lo guarda en la base de datos
+    # 4. El usuario recibe el codigo en su email
+    #5. el ususario envia el nit desde local storage  y el codigo ya el usuario para validarlo a la vista confirm_reset_code
+    # 6. La vista valida el nit y el codigo con el serializer ConfirmationCodeSerializer
+    # 7. Si el codigo es valido, el usuario envia el nit, el codigo y la nueva contraseña a la vista confirm_password 
+
+#     # primera ruta send_reset_code 
+#     {
+#     "nit":"108827233"
+#     }
+
+#     # segunda ruta confirm_reset_code
+#     {
+#     "nit":"108827233",
+#     "code":2442
+#     }
+#     # tercera ruta confirm_password
+#     {
+    
+#     "nit":"108827233",
+#     "code":2442,
+#     "new_password": "Holamundo1"
+# }
+
+# username: empresa_nueva
+# "nit":"900123456",
+#     "code":2921,
+#     "new_password": "Senita2025"

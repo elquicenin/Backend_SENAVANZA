@@ -1,5 +1,5 @@
 from django .urls import path
-from .api import login_admin, login_empresa, logout ,verify ,CustomtokenObtainPairView, CustomTokenRefreshView, send_reset_code, confirm_reset_code
+from .api import login_admin, login_empresa, logout ,verify ,CustomtokenObtainPairView, CustomTokenRefreshView, send_reset_code, confirm_reset_code, confirm_password
 
 
 urlpatterns = [
@@ -12,5 +12,6 @@ urlpatterns = [
     path('verify/', verify, name='verify'),
     path('verify/', verify, name='verify'),
     path('code-reset/', send_reset_code, name='reset_password'), #el include permite incluir las urls de la app Login bajo el prefijo login/'
-    path('confirm-reset/', confirm_reset_code, name='confirm_reset'), #el include permite incluir las urls de la app Login bajo el prefijo login/'
+    path('confirm-code/', confirm_reset_code, name='confirm_code'), #el include permite incluir las urls de la app Login bajo el prefijo login/'
+    path('confirm-password/', confirm_password, name='confirm_reset'), #el include permite incluir las urls de la app Login bajo el prefijo login/'
 ]
