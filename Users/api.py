@@ -146,6 +146,11 @@ def user_empresa_update(request, pk):
         serializer = EmpresaSerializer(empresa, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
+            # Sincroniza el correo en el usuario si fue actualizado
+            nuevo_correo = serializer.validated_data.get('correo_electronico')  # Cambia 'correo' si tu campo se llama diferente
+            if nuevo_correo:
+                empresa.user.email = nuevo_correo
+                empresa.user.save()
             if serializer.validated_data.get('estado') == 2:
                 empresa.user.is_active = False
             else:

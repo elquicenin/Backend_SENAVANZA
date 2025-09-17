@@ -5,6 +5,7 @@ from django.conf import settings
 from django.utils.crypto import get_random_string
 from django.utils import timezone
 from random import randint
+from django.core.mail import send_mail
 #traemos desde User.serializers el UserSerializer y el userAdminSerializer para poder usarlos en las vistas de Login 
 
 class UserLoginSerializer(serializers.Serializer):
@@ -41,10 +42,14 @@ class PasswordResetSerializer(serializers.Serializer):
         print("DEBUG RESET:", reset, reset.code)  
         # esto es para ver en la consola el codigo de restablecimiento que se creo o se actualizo
 
-        user.email_user(
+        # Usar el correo de la empresa, no el del usuario
+        correo_empresa = empresa.correo_electronico  # Cambia 'correo' por el nombre real del campo en Empresa
+        send_mail(
             subject="Código de restablecimiento de contraseña",
-            message=f"Su código de restablecimiento de contraseña es: {reset}"
-        ) # enviamos el codigo al email del usuario importante todo se saca de la base de datos
+            message=f"Su código de restablecimiento de contraseña es: {new_codee}",
+            from_email=None,  # Usa el default de settings
+            recipient_list=[correo_empresa],
+        )
 
         return reset # retornamos el codigo de restablecimiento
 
