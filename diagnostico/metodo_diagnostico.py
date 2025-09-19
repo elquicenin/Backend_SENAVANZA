@@ -27,8 +27,13 @@ def RecomendarPrograma(requirementEmpresa, nivel_programa, tools, hards_kills):
     similitud_tools = util.pytorch_cos_sim(embeddings_tools, embeddings_descripciones)
     similitud_hard_skills = util.pytorch_cos_sim(embeddings_hard_skills, embeddings_descripciones)
 
+    # porcentaje similitudes#
+    peso_requirement = 0.3
+    peso_tools = 0.4
+    peso_skills = 0.3
+
     # Promedio simple de similitudes
-    similitudes = (similitud_programa_con_requirement + similitud_tools + similitud_hard_skills) / 3
+    similitudes = (similitud_programa_con_requirement*peso_requirement + similitud_tools*peso_tools + similitud_hard_skills*peso_skills) 
 
     #  Programa con mayor similitud
     recomend_program = torch.argmax(similitudes).item()

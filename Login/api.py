@@ -6,8 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .serializers import UserLoginSerializer, PasswordResetSerializer, ConfirmationCodeSerializer,PasswordResetConfirmSerializer
-from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate        
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from Users.models import Empresa
 from . import models
