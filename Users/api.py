@@ -57,7 +57,7 @@ def user_create(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET', 'PUT'])
+@api_view(['GET'])
 def user_detail(request):
     try:
         user = models.User.objects.get()
@@ -68,12 +68,6 @@ def user_detail(request):
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    if request.method == 'PUT':
-        serializer = UserSerializer(user, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['DELETE'])
 def delete_user(request, pk):
@@ -90,13 +84,20 @@ def users_detail(request):
     users = UserSerializer(models.User.objects.all(), many=True)
     return Response(users.data, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT'])
 def user_detail_by_pk(request, pk):
     try:
         user = models.User.objects.get(pk=pk)
     except models.User.DoesNotExist:
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
+    if request.method == 'PUT':
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
     serializer = UserSerializer(user)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
