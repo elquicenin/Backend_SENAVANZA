@@ -12,7 +12,7 @@ class EmpresaSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Empresa
         fields = '__all__'  # Serializa todos los campos del modelo Empresa
-        read_only_fields = ['id', 'create_at', 'update_at', 'token', 'password','user']  # Campos de solo lectura
+        read_only_fields = ['id', 'create_at', 'update_at', 'token', 'user']  # Solo campos técnicos son de solo lectura
 ## EMPRESA 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -45,7 +45,7 @@ class UserSerializer(serializers.ModelSerializer):
             empresa = instance.empresa
             for attr, value in empresa_data.items():#este ciclo recorre los atributos de la empresa y los actualiza por medio del setattr que es una funcion que permite asignar un valor a un atributo de un objeto
                 setattr(empresa, attr, value)
-        empresa.save()
+            empresa.save()
         return instance
     
     def create_user(self, validated_data):
@@ -77,6 +77,27 @@ class UserSerializer(serializers.ModelSerializer):
 #   }
 # }
 ###-------------------------------------------------------------------------------------------###
+class EmpresaUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer específico para actualizaciones de empresa que permite todos los campos editables
+    """
+    class Meta:
+        model = models.Empresa
+        fields = [
+            'documento', 'numero_documento', 'razon_social', 'telefono', 
+            'correo_electronico', 'direccion', 'actividad_economica', 'estado'
+        ]
+        # No incluye read_only_fields para permitir actualización de todos los campos
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer específico para actualizaciones de usuario que permite todos los campos editables
+    """
+    class Meta:
+        model = models.User
+        fields = ['username', 'email', 'rol']
+        # No incluye campos técnicos como id, password, etc.
+
 class ProgramaFormacionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ProgramaFormacion # Serializa todos los campos del modelo ProgramaFormacion 

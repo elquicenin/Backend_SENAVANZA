@@ -2,7 +2,8 @@ from django.urls import path
 from .api import (
     user_create, user_empresa_list, user_empresa_update, user_empresa_create,
     programa_list, programa_create, programa_detail,
-    user_detail, users_detail, perfil_empresa, empresa_detail, user_detail_by_pk,delete_user
+    user_detail, users_detail, perfil_empresa, empresa_detail, user_detail_by_pk,delete_user,
+    actualizar_perfil_completo
 )
 
 urlpatterns = [ 
@@ -19,6 +20,7 @@ urlpatterns = [
     path('empresa/update/<str:pk>/', user_empresa_update, name='user_empresa_update'),
     path('empresa/<str:pk>/', empresa_detail, name='empresa_detail'),
     path('perfil/', perfil_empresa, name="perfil_empresa"),
+    path('perfil/actualizar/', actualizar_perfil_completo, name="actualizar_perfil_completo"),
 
     # --------- Programas ---------
     path('programas/', programa_list, name='programa_list'),               

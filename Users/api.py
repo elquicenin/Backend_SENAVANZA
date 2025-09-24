@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from .serializers import UserSerializer, EmpresaSerializer, ProgramaFormacionSerializer
+from .serializers import UserSerializer, EmpresaSerializer, ProgramaFormacionSerializer, EmpresaUpdateSerializer, UserUpdateSerializer
 from . import models
 
 # ---------------- PETICIONES PARA PROGRAMAS DE FORMACIÓN ---------------- #
@@ -131,15 +131,53 @@ def perfil_empresa(request):
         return Response({"error": "Empresa inactiva"}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'GET':
-        serializer = EmpresaSerializer(empresa)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        # Incluir datos del usuario en la respuesta
+        empresa_serializer = EmpresaSerializer(empresa)
+        user_serializer = UserSerializer(user)
+        
+        response_data = {
+            'empresa': empresa_serializer.data,
+            'usuario': user_serializer.data
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
 
     if request.method == 'PUT':
-        serializer = EmpresaSerializer(empresa, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Separar datos de empresa y usuario
+        empresa_data = request.data.copy()
+        user_data = {}
+        
+        # Campos que pueden actualizarse en el usuario
+        user_fields = ['username', 'email', 'rol']
+        for field in user_fields:
+            if field in empresa_data:
+                user_data[field] = empresa_data.pop(field)
+        
+        # Actualizar empresa
+        empresa_serializer = EmpresaSerializer(empresa, data=empresa_data, partial=True)
+        if empresa_serializer.is_valid():
+            empresa_serializer.save()
+            
+            # Actualizar datos del usuario si se proporcionaron
+            if user_data:
+                user_serializer = UserSerializer(user, data=user_data, partial=True)
+                if user_serializer.is_valid():
+                    user_serializer.save()
+                else:
+                    return Response({'user_errors': user_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Sincronizar correo si se actualizó en empresa
+            nuevo_correo = empresa_serializer.validated_data.get('correo_electronico')
+            if nuevo_correo and not user_data.get('email'):
+                user.email = nuevo_correo
+                user.save()
+            
+            # Retornar datos actualizados
+            response_data = {
+                'empresa': empresa_serializer.data,
+                'usuario': UserSerializer(user).data
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        return Response(empresa_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['PUT', 'DELETE'])
 def user_empresa_update(request, pk):
@@ -149,19 +187,43 @@ def user_empresa_update(request, pk):
         return Response({'error': 'Empresa no encontrada'}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'PUT':
-        serializer = EmpresaSerializer(empresa, data=request.data, partial=True)
+        # Separar datos de empresa y usuario
+        empresa_data = request.data.copy()
+        user_data = {}
+        
+        # Campos que pueden actualizarse en el usuario
+        user_fields = ['username', 'email', 'rol']
+        for field in user_fields:
+            if field in empresa_data:
+                user_data[field] = empresa_data.pop(field)
+        
+        # Actualizar empresa
+        serializer = EmpresaSerializer(empresa, data=empresa_data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            # Sincroniza el correo en el usuario si fue actualizado
-            nuevo_correo = serializer.validated_data.get('correo_electronico')  # Cambia 'correo' si tu campo se llama diferente
-            if nuevo_correo:
+            
+            # Actualizar datos del usuario si se proporcionaron
+            if user_data:
+                user_serializer = UserSerializer(empresa.user, data=user_data, partial=True)
+                if user_serializer.is_valid():
+                    user_serializer.save()
+                else:
+                    return Response({'user_errors': user_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Sincronizar correo si se actualizó en empresa
+            nuevo_correo = serializer.validated_data.get('correo_electronico')
+            if nuevo_correo and not user_data.get('email'):
                 empresa.user.email = nuevo_correo
                 empresa.user.save()
+            
+            # Manejar estado de la empresa
             if serializer.validated_data.get('estado') == 2:
                 empresa.user.is_active = False
             else:
                 empresa.user.is_active = True
             empresa.user.save()
+            
+            # Retornar datos actualizados de empresa
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -182,3 +244,72 @@ def empresa_detail(request, pk):
 
     serializer = EmpresaSerializer(empresa)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def actualizar_perfil_completo(request):
+    """
+    Endpoint para actualizar tanto datos del usuario como de la empresa
+    Permite actualizar username, email, rol del usuario y todos los campos de empresa
+    """
+    user = request.user
+    try:
+        empresa = models.Empresa.objects.get(user=user)
+    except models.Empresa.DoesNotExist:
+        return Response(
+            {"error": "No se encontró una empresa asociada a este usuario"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    if empresa.estado == 2:
+        return Response({"error": "Empresa inactiva"}, status=status.HTTP_403_FORBIDDEN)
+
+    # Separar datos del usuario y empresa
+    data = request.data.copy()
+    user_data = {}
+    empresa_data = {}
+    
+    # Campos del usuario que se pueden actualizar
+    user_fields = ['username', 'email', 'rol']
+    for field in user_fields:
+        if field in data:
+            user_data[field] = data.pop(field)
+    
+    # Los datos restantes son para la empresa
+    empresa_data = data
+    
+    errors = {}
+    
+    # Actualizar usuario si hay datos
+    if user_data:
+        user_serializer = UserSerializer(user, data=user_data, partial=True)
+        if user_serializer.is_valid():
+            user_serializer.save()
+        else:
+            errors['user_errors'] = user_serializer.errors
+    
+    # Actualizar empresa si hay datos
+    if empresa_data:
+        empresa_serializer = EmpresaSerializer(empresa, data=empresa_data, partial=True)
+        if empresa_serializer.is_valid():
+            empresa_serializer.save()
+            
+            # Sincronizar correo si se actualizó en empresa
+            nuevo_correo = empresa_serializer.validated_data.get('correo_electronico')
+            if nuevo_correo and not user_data.get('email'):
+                user.email = nuevo_correo
+                user.save()
+        else:
+            errors['empresa_errors'] = empresa_serializer.errors
+    
+    # Si hay errores, retornarlos
+    if errors:
+        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Retornar datos actualizados
+    response_data = {
+        'usuario': UserSerializer(user).data,
+        'empresa': EmpresaSerializer(empresa).data,
+        'message': 'Perfil actualizado exitosamente'
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
