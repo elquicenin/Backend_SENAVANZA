@@ -34,20 +34,40 @@ class UserSerializer(serializers.ModelSerializer):
     
 
     def update(self, instance, validated_data):
-        empresa_data = validated_data.pop('empresa', None)# el pop() elimina el campo 'empresa' de validated_data y lo asigna a empresa_data, si no existe, devuelve None
-        # Actualiza los campos de la instancia del usuario que es empresa
-        for atributo, value in validated_data.items(): 
-            setattr(instance, atributo, value)
-        instance.save()
-        # Si hay datos de empresa, actualiza la empresa asociada
-        if empresa_data and hasattr(instance, 'empresa'):# el hasattr() verifica si la instancia tiene el atributo 'empresa'
-            # Si la instancia tiene una empresa asociada, actualiza sus campos
-            empresa = instance.empresa
-            for attr, value in empresa_data.items():#este ciclo recorre los atributos de la empresa y los actualiza por medio del setattr que es una funcion que permite asignar un valor a un atributo de un objeto
-                setattr(empresa, attr, value)
-            empresa.save()
-        return instance
-    
+            # 1. Extraer los datos de 'empresa' (OneToOne/Nested)
+            empresa_data = validated_data.pop('empresa', None)
+            
+            # 2. Extraer los datos de 'groups' (ManyToManyField)
+            groups_data = validated_data.pop('groups', None)
+
+            # 3. Extraer los datos de 'user_permissions' (ManyToManyField)
+            # ESTA ES LA NUEVA CLAVE PARA SOLUCIONAR EL ERROR
+            user_permissions_data = validated_data.pop('user_permissions', None) 
+            
+            # 4. Actualiza los campos de la instancia del usuario que NO son ManyToMany
+            # El error ocurre en la línea 48 de tu traceback, que es este ciclo:
+            for atributo, value in validated_data.items(): 
+                setattr(instance, atributo, value)
+                
+            instance.save()
+            
+            # 5. Actualizar la relación ManyToMany 'groups'
+            if groups_data is not None:
+                instance.groups.set(groups_data)
+            
+            # 6. Actualizar la relación ManyToMany 'user_permissions' usando .set()
+            if user_permissions_data is not None:
+                # Es vital usar .set() para actualizar esta relación M2M
+                instance.user_permissions.set(user_permissions_data)
+                
+            # 7. Actualizar la empresa asociada (si aplica)
+            if empresa_data and hasattr(instance, 'empresa'):
+                empresa = instance.empresa
+                for attr, value in empresa_data.items():
+                    setattr(empresa, attr, value)
+                empresa.save()
+                
+            return instance
     def create_user(self, validated_data):
         """
         Crea un usuario admin cuando su rol sea 'admin'
