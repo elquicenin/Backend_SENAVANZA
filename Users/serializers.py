@@ -45,7 +45,7 @@ class UserSerializer(serializers.ModelSerializer):
             empresa = instance.empresa
             for attr, value in empresa_data.items():#este ciclo recorre los atributos de la empresa y los actualiza por medio del setattr que es una funcion que permite asignar un valor a un atributo de un objeto
                 setattr(empresa, attr, value)
-            empresa.save()
+        empresa.save()
         return instance
     
     def create_user(self, validated_data):

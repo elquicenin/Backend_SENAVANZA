@@ -68,7 +68,6 @@ def user_detail(request):
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
 @api_view(['DELETE'])
 def delete_user(request, pk):
     try:
