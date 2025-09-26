@@ -1,0 +1,8 @@
+
+
+# Para utilizar cada prueba es : python manage.py test (carpeta).(nombre del archivo para hacer la prueba) --keepbd
+
+
+# python manage.py test pruebas.formulario_selenium --keepdb
+# python manage.py test pruebas.login_selenium --keepdb
+# python manage.py test pruebas.crear_empresa_selenium --keepdb
