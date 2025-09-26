@@ -131,53 +131,15 @@ def perfil_empresa(request):
         return Response({"error": "Empresa inactiva"}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'GET':
-        # Incluir datos del usuario en la respuesta
-        empresa_serializer = EmpresaSerializer(empresa)
-        user_serializer = UserSerializer(user)
-        
-        response_data = {
-            'empresa': empresa_serializer.data,
-            'usuario': user_serializer.data
-        }
-        return Response(response_data, status=status.HTTP_200_OK)
+        serializer = EmpresaSerializer(empresa)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     if request.method == 'PUT':
-        # Separar datos de empresa y usuario
-        empresa_data = request.data.copy()
-        user_data = {}
-        
-        # Campos que pueden actualizarse en el usuario
-        user_fields = ['username', 'email', 'rol']
-        for field in user_fields:
-            if field in empresa_data:
-                user_data[field] = empresa_data.pop(field)
-        
-        # Actualizar empresa
-        empresa_serializer = EmpresaSerializer(empresa, data=empresa_data, partial=True)
-        if empresa_serializer.is_valid():
-            empresa_serializer.save()
-            
-            # Actualizar datos del usuario si se proporcionaron
-            if user_data:
-                user_serializer = UserSerializer(user, data=user_data, partial=True)
-                if user_serializer.is_valid():
-                    user_serializer.save()
-                else:
-                    return Response({'user_errors': user_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-            
-            # Sincronizar correo si se actualizó en empresa
-            nuevo_correo = empresa_serializer.validated_data.get('correo_electronico')
-            if nuevo_correo and not user_data.get('email'):
-                user.email = nuevo_correo
-                user.save()
-            
-            # Retornar datos actualizados
-            response_data = {
-                'empresa': empresa_serializer.data,
-                'usuario': UserSerializer(user).data
-            }
-            return Response(response_data, status=status.HTTP_200_OK)
-        return Response(empresa_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = EmpresaSerializer(empresa, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['PUT', 'DELETE'])
 def user_empresa_update(request, pk):
@@ -187,49 +149,26 @@ def user_empresa_update(request, pk):
         return Response({'error': 'Empresa no encontrada'}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'PUT':
-        # Separar datos de empresa y usuario
-        empresa_data = request.data.copy()
-        user_data = {}
-        
-        # Campos que pueden actualizarse en el usuario
-        user_fields = ['username', 'email', 'rol']
-        for field in user_fields:
-            if field in empresa_data:
-                user_data[field] = empresa_data.pop(field)
-        
-        # Actualizar empresa
-        serializer = EmpresaSerializer(empresa, data=empresa_data, partial=True)
+        serializer = EmpresaSerializer(empresa, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            
-            # Actualizar datos del usuario si se proporcionaron
-            if user_data:
-                user_serializer = UserSerializer(empresa.user, data=user_data, partial=True)
-                if user_serializer.is_valid():
-                    user_serializer.save()
-                else:
-                    return Response({'user_errors': user_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-            
-            # Sincronizar correo si se actualizó en empresa
-            nuevo_correo = serializer.validated_data.get('correo_electronico')
-            if nuevo_correo and not user_data.get('email'):
+            # Sincroniza el correo en el usuario si fue actualizado
+            nuevo_correo = serializer.validated_data.get('correo_electronico')  # Cambia 'correo' si tu campo se llama diferente
+            if nuevo_correo:
                 empresa.user.email = nuevo_correo
                 empresa.user.save()
-            
-            # Manejar estado de la empresa
             if serializer.validated_data.get('estado') == 2:
                 empresa.user.is_active = False
             else:
                 empresa.user.is_active = True
             empresa.user.save()
-            
-            # Retornar datos actualizados de empresa
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == 'DELETE':
         empresa.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
