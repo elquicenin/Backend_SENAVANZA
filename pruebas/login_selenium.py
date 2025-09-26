@@ -69,3 +69,5 @@ class E2E_ReactEdgeTestCase(LiveServerTestCase):
             current_url = self.selenium.current_url
             page_text = self.selenium.find_element(By.TAG_NAME, "body").text
             self.fail(f"Fallo en login: {e}\nURL actual: {current_url}\nTexto en pantalla: {page_text[:200]}")
+
+# python manage.py test pruebas.login_selenium --keepdb

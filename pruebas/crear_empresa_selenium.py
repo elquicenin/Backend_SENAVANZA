@@ -112,3 +112,5 @@ class E2E_CrearEmpresaTest(LiveServerTestCase):
         # Esperar el toast o la redirección
         time.sleep(3)  # da tiempo a que se procese
         print(" Empresa enviada para creación")
+
+# python manage.py test pruebas.crear_empresa_selenium --keepdb

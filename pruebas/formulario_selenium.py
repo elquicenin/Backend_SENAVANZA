@@ -153,3 +153,5 @@ class E2E_DiagnosticoEmpresarialTest(LiveServerTestCase):
         # Usamos assertEqual para una verificación estricta del texto limpio
         self.assertEqual(texto_esperado, texto_normalizado) 
         print("Prueba E2E 'Diagnóstico Empresarial' completada con éxito.")
+
+# python manage.py test pruebas.formulario_selenium --keepdb
