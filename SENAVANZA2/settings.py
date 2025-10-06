@@ -14,23 +14,21 @@ from pathlib import Path
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 from datetime import timedelta
-import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-env = environ.Env()
-environ.Env.read_env(os.path.join(BASE_DIR , '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env.str('SECRET_KEY')
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG', default=False)
+SECRET_KEY = 'django-insecure-&mgomqc%wu)yp3m$b)8zmgazeg$b*vu7b0uzh$c8y2__6d4naf'
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
+
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -166,7 +164,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    ""
     "http://localhost:5173"
 ]
 
