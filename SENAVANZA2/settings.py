@@ -160,15 +160,35 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+# En desarrollo, estas deben ser False, ya que estamos en HTTP.
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+    
+    
+# 'Lax' es el valor por defecto y funciona bien para localhost.
+SESSION_COOKIE_SAMESITE = 'Lax' 
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+
+
 #vamos a realizar la configuracion del puerto de la API REST para que sea accesible desde el frontend
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "http://senavanza.com",
+    "https://senavanza.com",
+    "http://www.senavanza.com",
+    "https://www.senavanza.com",
+
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
+    "http://senavanza.com",
+    "https://senavanza.com",
+    "http://www.senavanza.com",
+    "https://www.senavanza.com",
 ]
 
 SIMPLE_JWT = {
